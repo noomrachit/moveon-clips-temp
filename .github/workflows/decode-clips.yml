@@ -2,7 +2,7 @@ name: Decode clips
 on:
   push:
     paths:
-      - 'b64/**'
+      - 'b64v2/**'
       - '.github/workflows/decode-clips.yml'
   workflow_dispatch:
 permissions:
@@ -16,7 +16,7 @@ jobs:
         run: |
           set -euo pipefail
           for n in 01 02 03 04; do
-            ls b64/${n}.part* | sort | xargs cat > /tmp/${n}.b64
+            ls b64v2/${n}.part* | sort | xargs cat > /tmp/${n}.b64
             tr -d ' \n\r\t' < /tmp/${n}.b64 > /tmp/${n}.clean.b64
             base64 -d /tmp/${n}.clean.b64 > ${n}.mp4
             echo "decoded $n $(wc -c < ${n}.mp4) bytes"
@@ -32,5 +32,5 @@ jobs:
             echo "no changes"
             exit 0
           fi
-          git commit -m "decode b64 parts to mp4"
+          git commit -m "decode b64v2 parts to mp4"
           git push
