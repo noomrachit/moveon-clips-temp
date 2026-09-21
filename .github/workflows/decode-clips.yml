@@ -16,8 +16,9 @@ jobs:
         run: |
           set -euo pipefail
           for n in 01 02 03 04; do
-            cat b64/${n}.part* > /tmp/${n}.b64
-            base64 -d /tmp/${n}.b64 > ${n}.mp4
+            ls b64/${n}.part* | sort | xargs cat > /tmp/${n}.b64
+            tr -d ' \n\r\t' < /tmp/${n}.b64 > /tmp/${n}.clean.b64
+            base64 -d /tmp/${n}.clean.b64 > ${n}.mp4
             echo "decoded $n $(wc -c < ${n}.mp4) bytes"
             python3 -c "from pathlib import Path; b=Path('${n}.mp4').read_bytes(); assert len(b)>1000; print('ok', len(b))"
           done
