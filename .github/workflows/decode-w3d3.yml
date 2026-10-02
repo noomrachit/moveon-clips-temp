@@ -1,0 +1,33 @@
+name: Decode w3d3 media
+on:
+  push:
+    paths:
+      - 'w3d3-b64/**'
+      - '.github/workflows/decode-w3d3.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  decode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode FB jpg and YT mp4
+        run: |
+          set -euo pipefail
+          mkdir -p w3d3
+          ls w3d3-b64/fb.part* | sort | xargs cat > /tmp/fb.b64
+          tr -d ' \n\r\t' < /tmp/fb.b64 | base64 -d > w3d3/fb-w3d3-night-bath.jpg
+          ls w3d3-b64/yt.part* | sort | xargs cat > /tmp/yt.b64
+          tr -d ' \n\r\t' < /tmp/yt.b64 | base64 -d > w3d3/short-w3d3-night-bath.mp4
+          echo "fb $(wc -c < w3d3/fb-w3d3-night-bath.jpg) yt $(wc -c < w3d3/short-w3d3-night-bath.mp4)"
+          python3 -c "from pathlib import Path; assert Path('w3d3/fb-w3d3-night-bath.jpg').stat().st_size>10000; assert Path('w3d3/short-w3d3-night-bath.mp4').stat().st_size>100000"
+      - name: Commit decoded media
+        run: |
+          set -euo pipefail
+          git config user.name decode-bot
+          git config user.email decode-bot@users.noreply.github.com
+          git add w3d3/fb-w3d3-night-bath.jpg w3d3/short-w3d3-night-bath.mp4
+          git diff --cached --quiet && exit 0
+          git commit -m "decode w3d3 media for Postiz"
+          git push
